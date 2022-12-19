@@ -866,7 +866,7 @@
                                  */
                                 var counter = 0;
                                 var interval = setInterval(function() {
-                                    if (counter > 10) {
+                                    if (counter > 20) {
                                         /**
                                          * Lets only check for the refs 10 times.
                                          * Bcz this could go on forever although not likely.
