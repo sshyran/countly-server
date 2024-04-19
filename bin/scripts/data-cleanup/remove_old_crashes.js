@@ -16,6 +16,8 @@ const DRY_RUN = true;
 const SERVER_URL = '';
 // the limit of crashgroups to delete per Countly app
 const BATCH_LIMIT = 1000;
+// if true, will output document count and sizes in dry run mode, potentially slow!!
+const OUTPUT_DOCUMENT_STATS = false;
 // format 'YYYY-MM-DD', crashes with last occurence older than this will be removed
 const LAST_TIMESTAMP = '';
 
@@ -81,6 +83,73 @@ async function generateRequestOptions(db, {
     return requestOptions;
 }
 
+async function generateDocumentStats(db, {
+    apps,
+    batchCount,
+    batchLimit,
+    lastUnixTimestamp,
+}) {
+    const docStats = {
+        totalDocCount: 0,
+        totalDocSize: 0,
+    };
+
+    for (let idx = 0; idx < apps.length; idx += 1) {
+        const app_id = `${apps[idx]._id}`;
+
+        const crashgroupStats = await db.collection(`app_crashgroups${app_id}`).aggregate([
+            { $match: { lastTs: { $lt: lastUnixTimestamp } } },
+            {
+                $project: {
+                    reports: '$reports',
+                    users: '$users',
+                    sizeKB: { $divide: [{ $bsonSize: '$$ROOT' }, 1000] }
+                },
+            },
+            { $skip: batchLimit * batchCount },
+            { $limit: batchLimit },
+            {
+                $group: {
+                    _id: null,
+                    ids: { $push: '$_id' },
+                    reports: { $sum: '$reports' },
+                    users: { $sum: '$users' },
+                    sizeKB: { $sum: '$sizeKB' },
+                },
+            },
+        ]).toArray();
+
+        if (crashgroupStats.length > 0) {
+            docStats.totalDocCount += crashgroupStats[0].reports + crashgroupStats[0].users + crashgroupStats[0].ids.length;
+            docStats.totalDocSize += crashgroupStats[0].sizeKB;
+
+            const crashesStats = await db.collection(`app_crashes${app_id}`).aggregate([
+                { $match: { group: { $in: crashgroupStats[0].ids } } },
+                {
+                    $project: {
+                        sizeKB: { $divide: [{ $bsonSize: '$$ROOT' }, 1000] }
+                    },
+                },
+                { $group: { _id: null, sizeKB: { $sum: '$sizeKB' } } },
+            ]).toArray();
+
+            const crashuserStats = await db.collection(`app_crashusers${app_id}`).aggregate([
+                { $match: { group: { $in: crashgroupStats[0].ids } } },
+                {
+                    $project: {
+                        sizeKB: { $divide: [{ $bsonSize: '$$ROOT' }, 1000] }
+                    },
+                },
+                { $group: { _id: null, sizeKB: { $sum: '$sizeKB' } } },
+            ]).toArray();
+
+            docStats.totalDocSize += crashesStats[0].sizeKB + crashuserStats[0].sizeKB;
+        }
+    }
+
+    return docStats;
+}
+
 function urlFromRequestOption(requestOption) {
     try {
         const urlObj = new URL(requestOption.uri);
@@ -100,6 +169,7 @@ function urlFromRequestOption(requestOption) {
 pluginManager.dbConnection().then(async(db) => {
     let requestOptions = [];
     let batchCount = 0;
+    let docStats = {};
 
     let urlObj = {};
     try {
@@ -125,11 +195,24 @@ pluginManager.dbConnection().then(async(db) => {
         uri: urlObj.href,
     }));
 
+    if (DRY_RUN && OUTPUT_DOCUMENT_STATS) {
+        docStats = await generateDocumentStats(db, {
+            apps,
+            batchCount,
+            batchLimit: BATCH_LIMIT,
+            lastUnixTimestamp,
+        });
+    }
+
     while (requestOptions.length > 0) {
         const requestOption = requestOptions.shift();
 
         if (DRY_RUN) {
             console.log(urlFromRequestOption(requestOption));
+
+            if (OUTPUT_DOCUMENT_STATS) {
+                console.log(`Total documents: ${docStats.totalDocCount}\nTotal document size: ${docStats.totalDocSize.toFixed(2)}KB\n`);
+            }
         }
         else {
             console.log('Sending deletion requests');
@@ -160,6 +243,15 @@ pluginManager.dbConnection().then(async(db) => {
                 lastUnixTimestamp,
                 uri: urlObj.href,
             }));
+
+            if (DRY_RUN && OUTPUT_DOCUMENT_STATS) {
+                docStats = await generateDocumentStats(db, {
+                    apps,
+                    batchCount,
+                    batchLimit: BATCH_LIMIT,
+                    lastUnixTimestamp,
+                });
+            }
         }
     }
 
