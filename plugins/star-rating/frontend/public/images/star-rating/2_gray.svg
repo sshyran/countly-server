@@ -1,12 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="48px" height="48px" viewBox="0 0 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>2_gray</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="2_gray">
-            <ellipse id="Oval" fill="#C8CED3" fill-rule="nonzero" cx="24.0340485" cy="24.1230798" rx="23.9046417" ry="23.6307696"></ellipse>
-            <line x1="14.4011175" y1="34.8554019" x2="33.524831" y2="31.3107864" id="Path-2" stroke="#FEFEFE" stroke-width="2.46153846" stroke-linecap="round" transform="translate(23.962974, 33.083094) rotate(10.500709) translate(-23.962974, -33.083094) "></line>
-            <ellipse id="Oval-3-Copy" fill="#FEFEFE" fill-rule="nonzero" cx="12.798696" cy="20.0369258" rx="4.1833123" ry="4.13538468"></ellipse>
-            <ellipse id="Oval-3-Copy-2" fill="#FEFEFE" fill-rule="nonzero" cx="35.5081056" cy="20.0369258" rx="4.1833123" ry="4.13538468"></ellipse>
-        </g>
-    </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48" version="1.1" viewBox="0 0 48 48"><title>2_gray</title><g id="Page-1" fill="none" fill-rule="evenodd" stroke="none" stroke-width="1"><g id="2_gray"><ellipse id="Oval" cx="24.034" cy="24.123" fill="#C8CED3" fill-rule="nonzero" rx="23.905" ry="23.631"/><line id="Path-2" x1="14.401" x2="33.525" y1="34.855" y2="31.311" stroke="#FEFEFE" stroke-linecap="round" stroke-width="2.462" transform="translate(23.962974, 33.083094) rotate(10.500709) translate(-23.962974, -33.083094)"/><ellipse id="Oval-3-Copy" cx="12.799" cy="20.037" fill="#FEFEFE" fill-rule="nonzero" rx="4.183" ry="4.135"/><ellipse id="Oval-3-Copy-2" cx="35.508" cy="20.037" fill="#FEFEFE" fill-rule="nonzero" rx="4.183" ry="4.135"/></g></g></svg>
